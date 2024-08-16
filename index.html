@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stance and Motion-Free</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+        }
+        h1 {
+            color: #3498db;
+        }
+        .move-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .move-item {
+            background-color: #34495e;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ecf0f1;
+        }
+        .move-item.selected {
+            background-color: #3498db;
+            color: #fff;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .input-group label {
+            flex: 1;
+            text-align: right;
+            margin-right: 10px;
+        }
+        .input-group input {
+            flex: 2;
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            color: #ecf0f1;
+            padding: 5px;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #34495e;
+            border: 1px solid #3498db;
+            color: #ecf0f1;
+        }
+        button {
+            background-color: #3498db;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #timer, #move {
+            font-size: 24px;
+            margin: 20px 0;
+            font-weight: bold;
+            color: #3498db;
+        }
+        #controls {
+            display: none;
+        }
+        #customMoveForm {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #34495e;
+            border-radius: 5px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .move-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    
+    
+</head>
+<body>
+    <h1>Stance and Motion-Free</h1>
+    <div id="setup">
+        <div class="move-grid" id="moveSelection">
+            <div class="move-item" data-move="Sprawl">Sprawl</div>
+            <div class="move-item" data-move="Shot">Shot</div>
+            <div class="move-item" data-move="Sprawl and Spin">Sprawl and Spin</div>
+            <div class="move-item" data-move="Level Change">Level Change</div>
+            <div class="move-item" data-move="Ankle Pick">Ankle Pick</div>
+            <div class="move-item" data-move="Fake">Fake</div>
+            <div class="move-item" data-move="Pepsi">Pepsi</div>
+            <div class="move-item" data-move="Down Block">Down Block</div>
+            <div class="move-item" data-move="Circle">Circle</div>
+            <div class="move-item" data-move="Duck Under">Duck Under</div>
+        </div>
+        <div id="customMoveForm">
+            <input type="text" id="customMove" placeholder="Enter custom move">
+            <button onclick="addCustomMove()">Add Custom Move</button>
+        </div>
+        <div class="input-group">
+            <label for="frequency">Seconds between callouts:</label>
+            <input type="number" id="frequency" min="1" value="3">
+        </div>
+        <div class="input-group">
+            <label for="roundLength">Round length (seconds):</label>
+            <input type="number" id="roundLength" min="10" value="60">
+        </div>
+        <div class="input-group">
+            <label for="rounds"># of rounds:</label>
+            <input type="number" id="rounds" min="1" value="3">
+        </div>
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+        <button onclick="startTraining()">Start Training</button>
+    </div>
+    <div id="controls">
+        <div id="timer"></div>
+        <div id="move"></div>
+        <button onclick="stopTraining()">Stop Training</button>
+    </div>
+
+    <script>
+        let timer;
+        let moveTimer;
+        let currentRound = 1;
+        let timeLeft;
+        let selectedMoves = [];
+        let frequency;
+        let roundLength;
+        let totalRounds;
+        let speech = new SpeechSynthesisUtterance();
+
+        function addCustomMove() {
+            const customMove = document.getElementById('customMove').value.trim();
+            if (customMove) {
+                const moveGrid = document.getElementById('moveSelection');
+                const newMoveItem = document.createElement('div');
+                newMoveItem.className = 'move-item';
+                newMoveItem.setAttribute('data-move', customMove);
+                newMoveItem.textContent = customMove;
+                newMoveItem.addEventListener('click', toggleMove);
+                moveGrid.appendChild(newMoveItem);
+                document.getElementById('customMove').value = '';
+            }
+        }
+
+        function toggleMove() {
+            this.classList.toggle('selected');
+            const move = this.getAttribute('data-move');
+            if (this.classList.contains('selected')) {
+                selectedMoves.push(move);
+            } else {
+                selectedMoves = selectedMoves.filter(m => m !== move);
+            }
+        }
+
+        document.querySelectorAll('.move-item').forEach(item => {
+            item.addEventListener('click', toggleMove);
+        });
+
+        function startTraining() {
+            frequency = parseInt(document.getElementById('frequency').value);
+            roundLength = parseInt(document.getElementById('roundLength').value);
+            totalRounds = parseInt(document.getElementById('rounds').value);
+
+            if (selectedMoves.length === 0 || !frequency || !roundLength || !totalRounds) {
+                alert('Please select at least one move and fill in all fields.');
+                return;
+            }
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('controls').style.display = 'block';
+
+            startRound();
+        }
+
+        function startRound() {
+            timeLeft = roundLength;
+            updateTimer();
+            callOutMove();
+
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    if (currentRound < totalRounds) {
+                        currentRound++;
+                        playDing();
+                        speak("Rest");
+                        document.getElementById('move').textContent = 'Rest';
+                        setTimeout(startRound, 10000); // 10 seconds rest
+                    } else {
+                        endTraining();
+                    }
+                }
+            }, 1000);
+
+            moveTimer = setInterval(callOutMove, frequency * 1000);
+        }
+
+        function updateTimer() {
+            document.getElementById('timer').textContent = `Round ${currentRound}/${totalRounds} - ${timeLeft}s`;
+        }
+
+        function callOutMove() {
+            const randomMove = selectedMoves[Math.floor(Math.random() * selectedMoves.length)];
+            document.getElementById('move').textContent = randomMove;
+            speak(randomMove);
+        }
+
+        function speak(text) {
+            speech.text = text;
+            speech.volume = parseFloat(document.getElementById('volume').value);
+            window.speechSynthesis.speak(speech);
+        }
+
+        function stopTraining() {
+            clearInterval(timer);
+            clearInterval(moveTimer);
+            window.speechSynthesis.cancel(); // Stop any ongoing speech
+            endTraining();
+        }
+
+        function endTraining() {
+            document.getElementById('setup').style.display = 'block';
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('move').textContent = '';
+            currentRound = 1;
+            speak("Training complete");
+        }
+
+        function playDing() {
+            const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeigFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVqzn77BdGAg+ltryxnMpBSl+zPLaizsIGGS57OihUBELTKXh8bllHgU2jdXzzn0rBSF1xe/glEILElyx6OyrWBUIQ5zd8sFuJAUuhM/z1YU2Bhxqvu7mnEoODlOq5O+zYBoGPJPY88p2KwUme8rx3I4+CRZiturqpVITC0mi4PK8aB8GM4nU8tGALgUfcsLu45ZFDBFYr+ftrVoXCECY3PLEcSYELIHO8tiJOQcZaLvt559NEAxPqOPwtmMcBjiP1/PMeigFJHfH8N2RQAoUXrTp66hVFApGnt/yvmwhBTCG0fPTgjMHHm7A7eSaRw0PVqzl77BeGQc+ltrzxnUoBSh+zPDaizsIGGS56+mjTxELTKXh8bllHgU1jdT0z3wsBSJ0xe/glEILElyx6OyrWRUIRJve8sFuJAUug8/y1oU2Bhxqvu3mnEoPDlOq5O+zYRsGPJLZ88p3KgUme8rx3I4+CRVht+rqpVMSC0mh4fK8aiAFM4nU8tGALgUfccPu45ZFDBFYr+ftrVwWCECY3PLEcSYGK4DN8tiIOQcZZ7zs56BODwxPpuPxtmQcBjiP1/PMeSkFI3fH8N+RQAoUXrTp66hWEwlGnt/yv2wiBDCG0fPTgzIHHW/A7eSaSQ0PVqvm77BeGQc+lNrzyHQpBSh9y/HajDsIF2W56+mjUREKTKPi8blnHgU1jdTy0HwtBSF0xPDhk0MKEV2y6OyrWRUJQ5vd88FwJAQug8/y1oY2Bhxqvu3mnEwODVKp5e+0YRsGOpPX88p3KgUmecnw3Y4/CBVhtuvqpVMSC0mh4PG9aiAFM4nS89GALwUfccLv45dGCxFYrufur1sYB0CY3PLEcicEK4DN8tiKOQcZZ7rs56BODwxPpuPxtmQdBTiP1/PMeSkFI3bH8d+RQQkUXrPq66lWFQlGnt/yv2wiBDCG0PPTgzIHHW3A7uSaSQ0PVKzm7rJeGAc9lNn0yHUpBSh9y/HajDwIF2S46+mjUREKTKPi8bppHgU1jdTy0HwtBSF0xPDhk0QKElyx6eyrWRUJQ5vd88NvJAUtg87y1oY3Bhtpve7mnUsODVKp5e+0YhsGOpHY88p3LAUlecnw3Y8+CBZhtuvqpVMSC0mh4PG9aiAFMojT89GBLgUfccLv45dGDRBYrufur1sYB0CX2/PEcycEK4DM8tiKOQcZZ7vs56BOEQxPpuPxt2MdBTeP1vTNeSoEI3bH8d+RQQoTXrPq66lWFQlEntwAAABJTkZUKgAAABIAAABTb2Z0d2FyZQBTb3VuZCBGb3JnZYLuM1xJRkY4AwAAV0FWRWZtdCAQAAAAAQABAEAfAABAfwAAAgADAABkYXRhCgMAAPLyysr////r6+v////////////////r6urL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vr');
+            audio.volume = parseFloat(document.getElementById('volume').value);
+            audio.play();
+        }
+    </script>
+</body>
+</html>
