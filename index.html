@@ -247,12 +247,14 @@
         }
     }
 
-    function callOutMove() {
-        const randomMove = selectedMoves[Math.floor(Math.random() * selectedMoves.length)];
-        document.getElementById('move').textContent = randomMove;
-        speak(randomMove);
+     function callOutMove() {
+        if (selectedMoves.length > 0) {
+            const randomIndex = Math.floor(Math.random() * selectedMoves.length);
+            const randomMove = selectedMoves[randomIndex];
+            document.getElementById('move').textContent = randomMove;
+            speak(randomMove);
+        }
     }
-
     function speak(text) {
         speech.text = text;
         speech.volume = parseFloat(document.getElementById('volume').value);
@@ -263,6 +265,7 @@
         clearInterval(timer);
         clearInterval(moveTimer);
         window.speechSynthesis.cancel(); // Stop any ongoing speech
+        document.getElementById('move').textContent = '';
         endTraining();
     }
 
@@ -272,6 +275,7 @@
         document.getElementById('setup').style.display = 'block';
         document.getElementById('controls').style.display = 'none';
         document.getElementById('move').textContent = '';
+        currentRound = 1;
         speak("Training complete");
     }
 
