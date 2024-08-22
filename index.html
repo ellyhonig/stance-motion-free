@@ -150,47 +150,22 @@
     let roundLength;
     let totalRounds;
     let speech = new SpeechSynthesisUtterance();
+    let audioContext;
 
-    function addCustomMove() {
-        const customMove = document.getElementById('customMove').value.trim();
-        if (customMove) {
-            const moveGrid = document.getElementById('moveSelection');
-            const newMoveItem = document.createElement('div');
-            newMoveItem.className = 'move-item';
-            newMoveItem.setAttribute('data-move', customMove);
-            newMoveItem.textContent = customMove;
-            newMoveItem.addEventListener('click', toggleMove);
-            moveGrid.appendChild(newMoveItem);
-            document.getElementById('customMove').value = '';
-        }
+    // Initialize audio context on user interaction
+    document.addEventListener('click', initAudio, {once: true});
+
+    function initAudio() {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Test audio
+        playBeep();
     }
-
-    function toggleMove() {
-        this.classList.toggle('selected');
-        const move = this.getAttribute('data-move');
-        if (this.classList.contains('selected')) {
-            selectedMoves.push(move);
-        } else {
-            selectedMoves = selectedMoves.filter(m => m !== move);
-        }
-    }
-
-    document.querySelectorAll('.move-item').forEach(item => {
-        item.addEventListener('click', toggleMove);
-    });
 
     function startTraining() {
-        frequency = parseInt(document.getElementById('frequency').value);
-        roundLength = parseInt(document.getElementById('roundLength').value);
-        totalRounds = parseInt(document.getElementById('rounds').value);
+        // ... (existing code)
 
-        if (selectedMoves.length === 0 || !frequency || !roundLength || !totalRounds) {
-            alert('Please select at least one move and fill in all fields.');
-            return;
-        }
-
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('controls').style.display = 'block';
+        // Ensure audio is initialized
+        if (!audioContext) initAudio();
 
         currentRound = 1;
         startGetReady();
@@ -214,47 +189,66 @@
     }
 
     function startRound() {
-        timeLeft = roundLength;
-        updateTimer();
-        callOutMove();
+        // ... (existing code)
+    }
 
-        timer = setInterval(() => {
-            timeLeft--;
-            updateTimer();
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                clearInterval(moveTimer);
+    function startRest() {
+        let restTime = 10; // 10 seconds rest
+        updateTimer(`Rest - ${restTime}s`);
+        
+        const restInterval = setInterval(() => {
+            restTime--;
+            updateTimer(`Rest - ${restTime}s`);
+            playTick();
+            
+            if (restTime <= 0) {
+                clearInterval(restInterval);
                 if (currentRound < totalRounds) {
                     currentRound++;
-                    playDing();
-                    speak("Rest");
-                    document.getElementById('move').textContent = 'Rest';
-                    setTimeout(startGetReady, 10000); // 10 seconds rest
+                    startGetReady();
                 } else {
                     endTraining();
                 }
             }
         }, 1000);
-
-        moveTimer = setInterval(callOutMove, frequency * 1000);
     }
 
     function updateTimer(text) {
-        if (text) {
-            document.getElementById('timer').textContent = text;
-        } else {
-            document.getElementById('timer').textContent = `Round ${currentRound}/${totalRounds} - ${timeLeft}s`;
-        }
+        document.getElementById('timer').textContent = text;
     }
 
-     function callOutMove() {
-        if (selectedMoves.length > 0) {
-            const randomIndex = Math.floor(Math.random() * selectedMoves.length);
-            const randomMove = selectedMoves[randomIndex];
-            document.getElementById('move').textContent = randomMove;
-            speak(randomMove);
-        }
+    function playBeep(isLong = false) {
+        const duration = isLong ? 0.3 : 0.1;
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+        gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.01);
+        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
     }
+
+    function playTick() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 1000;
+        gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
     function speak(text) {
         speech.text = text;
         speech.volume = parseFloat(document.getElementById('volume').value);
@@ -264,7 +258,7 @@
     function stopTraining() {
         clearInterval(timer);
         clearInterval(moveTimer);
-        window.speechSynthesis.cancel(); // Stop any ongoing speech
+        window.speechSynthesis.cancel();
         document.getElementById('move').textContent = '';
         endTraining();
     }
@@ -278,7 +272,6 @@
         currentRound = 1;
         speak("Training complete");
     }
-
     function playDing() {
         playAudio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeigFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBTGH0fPTgjMGHm7A7+OZSA0PVqzn77BdGAg+ltryxnMpBSl+zPLaizsIGGS57OihUBELTKXh8bllHgU2jdXzzn0rBSF1xe/glEILElyx6OyrWBUIQ5zd8sFuJAUuhM/z1YU2Bhxqvu7mnEoODlOq5O+zYBoGPJPY88p2KwUme8rx3I4+CRZiturqpVITC0mi4PK8aB8GM4nU8tGALgUfcsLu45ZFDBFYr+ftrVoXCECY3PLEcSYELIHO8tiJOQcZaLvt559NEAxPqOPwtmMcBjiP1/PMeigFJHfH8N2RQAoUXrTp66hVFApGnt/yvmwhBTCG0fPTgjMHHm7A7eSaRw0PVqzl77BeGQc+ltrzxnUoBSh+zPDaizsIGGS56+mjTxELTKXh8bllHgU1jdT0z3wsBSJ0xe/glEILElyx6OyrWRUIRJve8sFuJAUug8/y1oU2Bhxqvu3mnEoPDlOq5O+zYRsGPJLZ88p3KgUme8rx3I4+CRVht+rqpVMSC0mh4fK8aiAFM4nU8tGALgUfccPu45ZFDBFYr+ftrVwWCECY3PLEcSYGK4DN8tiIOQcZZ7zs56BODwxPpuPxtmQcBjiP1/PMeSkFI3fH8N+RQAoUXrTp66hWEwlGnt/yv2wiBDCG0fPTgzIHHW/A7eSaSQ0PVqvm77BeGQc+lNrzyHQpBSh9y/HajDsIF2W56+mjUREKTKPi8blnHgU1jdTy0HwtBSF0xPDhk0MKEV2y6OyrWRUJQ5vd88FwJAQug8/y1oY2Bhxqvu3mnEwODVKp5e+0YRsGOpPX88p3KgUmecnw3Y4/CBVhtuvqpVMSC0mh4PG9aiAFM4nS89GALwUfccLv45dGCxFYrufur1sYB0CY3PLEcicEK4DN8tiKOQcZZ7rs56BODwxPpuPxtmQdBTiP1/PMeSkFI3bH8d+RQQkUXrPq66lWFQlGnt/yv2wiBDCG0PPTgzIHHW3A7uSaSQ0PVKzm7rJeGAc9lNn0yHUpBSh9y/HajDwIF2S46+mjUREKTKPi8bppHgU1jdTy0HwtBSF0xPDhk0QKElyx6eyrWRUJQ5vd88NvJAUtg87y1oY3Bhtpve7mnUsODVKp5e+0YhsGOpHY88p3LAUlecnw3Y8+CBZhtuvqpVMSC0mh4PG9aiAFMojT89GBLgUfccLv45dGDRBYrufur1sYB0CX2/PEcycEK4DM8tiKOQcZZ7vs56BOEQxPpuPxt2MdBTeP1vTNeSoEI3bH8d+RQQoTXrPq66lWFQlEntwAAABJTkZUKgAAABIAAABTb2Z0d2FyZQBTb3VuZCBGb3JnZYLuM1xJRkY4AwAAV0FWRWZtdCAQAAAAAQABAEAfAABAfwAAAgADAABkYXRhCgMAAPLyysr////r6+v////////////////r6urL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vry/Ly8vLKysrr///r6+vr/////////////////////+vr68vy8vLyysrK6///6+vr6//////////////////////r6+vL8vLy8srKyuv//+vr6+v/////////////////////6+vr');
     }
