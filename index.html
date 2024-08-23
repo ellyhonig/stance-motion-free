@@ -249,6 +249,7 @@ function addCustomMove() {
     moveTimer = setInterval(callOutMove, frequency * 1000);
 }
     function startRest() {
+        speak("Rest");
         let restTime = 10; // 10 seconds rest
         updateTimer(`Rest - ${restTime}s`);
         
