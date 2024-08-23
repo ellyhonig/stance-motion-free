@@ -255,7 +255,6 @@ function addCustomMove() {
         const restInterval = setInterval(() => {
             restTime--;
             updateTimer(`Rest - ${restTime}s`);
-            playTick();
             
             if (restTime <= 0) {
                 clearInterval(restInterval);
@@ -321,17 +320,26 @@ function callOutMove() {
         clearInterval(timer);
         clearInterval(moveTimer);
         window.speechSynthesis.cancel();
+        if (audioContext) {
+            audioContext.close().then(() => {
+                audioContext = null;
+            });
+        }
         document.getElementById('move').textContent = '';
         endTraining();
     }
-
     function endTraining() {
         clearInterval(timer);
         clearInterval(moveTimer);
         document.getElementById('setup').style.display = 'block';
         document.getElementById('controls').style.display = 'none';
         document.getElementById('move').textContent = '';
+        document.getElementById('timer').textContent = '';
         currentRound = 1;
+        selectedMoves = [];
+        document.querySelectorAll('.move-item').forEach(item => {
+            item.classList.remove('selected');
+        });
         speak("Training complete");
     }
     
