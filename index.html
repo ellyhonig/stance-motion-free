@@ -140,7 +140,7 @@
         <button onclick="stopTraining()">Stop Training</button>
     </div>
 
-   <script>
+<script>
     let timer;
     let moveTimer;
     let currentRound = 1;
@@ -301,7 +301,7 @@
     }
 
     function speak(text) {
-        speech.text = text;
+        speech = new SpeechSynthesisUtterance(text);
         speech.volume = parseFloat(document.getElementById('volume').value);
         window.speechSynthesis.speak(speech);
     }
