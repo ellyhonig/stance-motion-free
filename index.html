@@ -11,108 +11,121 @@
             margin: 0 auto;
             padding: 20px;
             text-align: center;
-            background-color: #2c3e50;
-            color: #ecf0f1;
+            background-color: #1a2a3a;
+            color: #ffffff;
         }
         h1 {
-            color: #3498db;
+            color: #4db8ff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
         .move-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
         .move-item {
-            background-color: #34495e;
-            border: 2px solid #3498db;
+            background-color: #2c3e50;
+            border: 2px solid #4db8ff;
             border-radius: 5px;
             padding: 10px;
-            cursor: pointer;
+            cursor: move;
             transition: all 0.3s ease;
-            color: #ecf0f1;
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
         }
         .move-item.selected {
-            background-color: #3498db;
-            color: #fff;
+            background-color: #4db8ff;
+            color: #1a2a3a;
         }
         .input-group {
             display: flex;
-            align-items: center;
-            margin-bottom: 10px;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 15px;
         }
         .input-group label {
-            flex: 1;
-            text-align: right;
-            margin-right: 10px;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4db8ff;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
         }
         .input-group input {
-            flex: 2;
-            background-color: #34495e;
-            border: 1px solid #3498db;
-            color: #ecf0f1;
-            padding: 5px;
+            width: 100%;
+            background-color: #2c3e50;
+            border: 1px solid #4db8ff;
+            color: #ffffff;
+            padding: 8px;
+            border-radius: 3px;
         }
         input, button {
             display: block;
             width: 100%;
             margin: 10px 0;
-            padding: 10px;
+            padding: 12px;
             font-size: 16px;
-            background-color: #34495e;
-            border: 1px solid #3498db;
-            color: #ecf0f1;
+            background-color: #2c3e50;
+            border: 1px solid #4db8ff;
+            color: #ffffff;
+            border-radius: 3px;
         }
         button {
-            background-color: #3498db;
-            color: #fff;
+            background-color: #4db8ff;
+            color: #1a2a3a;
             cursor: pointer;
             transition: background-color 0.3s ease;
+            font-weight: bold;
         }
         button:hover {
-            background-color: #2980b9;
+            background-color: #3da8ff;
         }
         #timer, #move {
-            font-size: 24px;
+            font-size: 28px;
             margin: 20px 0;
             font-weight: bold;
-            color: #3498db;
+            color: #4db8ff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
         #controls {
             display: none;
         }
         #customMoveForm {
             margin-top: 20px;
-            padding: 10px;
-            background-color: #34495e;
+            padding: 15px;
+            background-color: #2c3e50;
             border-radius: 5px;
         }
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-            .move-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
+        #testSpeech {
+            margin-top: 20px;
+            background-color: #27ae60;
+        }
+        #testSpeech:hover {
+            background-color: #2ecc71;
+        }
+        label[for="volume"] {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #4db8ff;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
         }
     </style>
-    
-    
 </head>
 <body>
     <h1>Stance and Motion-Free</h1>
     <div id="setup">
         <div class="move-grid" id="moveSelection">
-            <div class="move-item" data-move="Sprawl">Sprawl</div>
-            <div class="move-item" data-move="Shot">Shot</div>
-            <div class="move-item" data-move="Sprawl and Spin">Sprawl and Spin</div>
-            <div class="move-item" data-move="Iranian Step">Iranian Step</div>
-            <div class="move-item" data-move="Foot Fire">Foot Fire</div>
-            <div class="move-item" data-move="Fake">Fake</div>
-            <div class="move-item" data-move="Pepsi">Pepsi</div>
-            <div class="move-item" data-move="Down Block">Down Block</div>
-            <div class="move-item" data-move="Circle">Circle</div>
-            <div class="move-item" data-move="Duck Under">Duck Under</div>
+            <div class="move-item" draggable="true" data-move="Sprawl">Sprawl</div>
+            <div class="move-item" draggable="true" data-move="Shot">Shot</div>
+            <div class="move-item" draggable="true" data-move="Sprawl and Spin">Sprawl and Spin</div>
+            <div class="move-item" draggable="true" data-move="Iranian Step">Iranian Step</div>
+            <div class="move-item" draggable="true" data-move="Foot Fire">Foot Fire</div>
+            <div class="move-item" draggable="true" data-move="Fake">Fake</div>
+            <div class="move-item" draggable="true" data-move="Pepsi">Pepsi</div>
+            <div class="move-item" draggable="true" data-move="Down Block">Down Block</div>
+            <div class="move-item" draggable="true" data-move="Circle">Circle</div>
+            <div class="move-item" draggable="true" data-move="Duck Under">Duck Under</div>
         </div>
         <div id="customMoveForm">
             <input type="text" id="customMove" placeholder="Enter custom move">
@@ -133,6 +146,7 @@
         <label for="volume">Volume:</label>
         <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
         <button onclick="startTraining()">Start Training</button>
+        <button id="testSpeech" onclick="testSpeech()">Test Speech</button>
     </div>
     <div id="controls">
         <div id="timer"></div>
@@ -140,203 +154,248 @@
         <button onclick="stopTraining()">Stop Training</button>
     </div>
 
-<script>
-    let timer;
-    let moveTimer;
-    let currentRound = 1;
-    let timeLeft;
-    let selectedMoves = [];
-    let frequency;
-    let roundLength;
-    let totalRounds;
-    let speech = new SpeechSynthesisUtterance();
-    let audioContext;
-    let isTrainingActive = false;
+    <script>
+        let timer;
+        let moveTimer;
+        let currentRound = 1;
+        let timeLeft;
+        let selectedMoves = [];
+        let frequency;
+        let roundLength;
+        let totalRounds;
+        let audioContext;
+        let isTrainingActive = false;
+        let speechSynth = window.speechSynthesis;
+        let isSpeaking = false;
 
-    function initAudio() {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
-
-    function toggleMove() {
-        this.classList.toggle('selected');
-        const move = this.getAttribute('data-move');
-        if (this.classList.contains('selected')) {
-            selectedMoves.push(move);
-        } else {
-            selectedMoves = selectedMoves.filter(m => m !== move);
-        }
-    }
-
-    document.querySelectorAll('.move-item').forEach(item => {
-        item.addEventListener('click', toggleMove);
-    });
-
-    function addCustomMove() {
-        const customMove = document.getElementById('customMove').value.trim();
-        if (customMove) {
-            const moveGrid = document.getElementById('moveSelection');
-            const newMoveItem = document.createElement('div');
-            newMoveItem.className = 'move-item';
-            newMoveItem.setAttribute('data-move', customMove);
-            newMoveItem.textContent = customMove;
-            newMoveItem.addEventListener('click', toggleMove);
-            moveGrid.appendChild(newMoveItem);
-            document.getElementById('customMove').value = '';
-        }
-    }
-
-    function startTraining() {
-        frequency = parseInt(document.getElementById('frequency').value);
-        roundLength = parseInt(document.getElementById('roundLength').value);
-        totalRounds = parseInt(document.getElementById('rounds').value);
-
-        if (selectedMoves.length === 0 || !frequency || !roundLength || !totalRounds) {
-            alert('Please select at least one move and fill in all fields.');
-            return;
+        function initAudio() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
         }
 
-        if (!audioContext) {
-            initAudio();
-        }
-
-        document.getElementById('setup').style.display = 'none';
-        document.getElementById('controls').style.display = 'block';
-
-        currentRound = 1;
-        isTrainingActive = true;
-        startGetReady();
-    }
-
-    function startGetReady() {
-        let beepsLeft = 3;
-        updateTimer(`Get Ready - ${beepsLeft}`);
-        
-        const beepInterval = setInterval(() => {
-            beepsLeft--;
-            if (beepsLeft > 0) {
-                updateTimer(`Get Ready - ${beepsLeft}`);
-                playBeep();
+        function toggleMove() {
+            this.classList.toggle('selected');
+            const move = this.getAttribute('data-move');
+            if (this.classList.contains('selected')) {
+                selectedMoves.push(move);
             } else {
-                clearInterval(beepInterval);
-                playBeep(true); // longer beep for start
-                startRound();
+                selectedMoves = selectedMoves.filter(m => m !== move);
             }
-        }, 1000);
-    }
+        }
 
-    function startRound() {
-        timeLeft = roundLength;
-        updateTimer();
-        callOutMove();
+        document.querySelectorAll('.move-item').forEach(item => {
+            item.addEventListener('click', toggleMove);
+            item.addEventListener('dragstart', dragStart);
+            item.addEventListener('dragover', dragOver);
+            item.addEventListener('drop', drop);
+        });
 
-        timer = setInterval(() => {
-            timeLeft--;
-            updateTimer();
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                clearInterval(moveTimer);
-                if (currentRound < totalRounds) {
-                    startRest();
+        function dragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.getAttribute('data-move'));
+        }
+
+        function dragOver(e) {
+            e.preventDefault();
+        }
+
+        function drop(e) {
+            e.preventDefault();
+            const draggedMove = e.dataTransfer.getData('text');
+            const targetMove = e.target.getAttribute('data-move');
+            if (draggedMove !== targetMove) {
+                const combinedMove = `${draggedMove} and ${targetMove}`;
+                addCustomMove(combinedMove);
+            }
+        }
+
+        function addCustomMove(customMove) {
+            if (!customMove) {
+                customMove = document.getElementById('customMove').value.trim();
+            }
+            if (customMove) {
+                const moveGrid = document.getElementById('moveSelection');
+                const newMoveItem = document.createElement('div');
+                newMoveItem.className = 'move-item selected';
+                newMoveItem.setAttribute('data-move', customMove);
+                newMoveItem.setAttribute('draggable', 'true');
+                newMoveItem.textContent = customMove;
+                newMoveItem.addEventListener('click', toggleMove);
+                newMoveItem.addEventListener('dragstart', dragStart);
+                newMoveItem.addEventListener('dragover', dragOver);
+                newMoveItem.addEventListener('drop', drop);
+                moveGrid.appendChild(newMoveItem);
+                document.getElementById('customMove').value = '';
+                selectedMoves.push(customMove);
+            }
+        }
+
+        function startTraining() {
+            frequency = parseInt(document.getElementById('frequency').value);
+            roundLength = parseInt(document.getElementById('roundLength').value);
+            totalRounds = parseInt(document.getElementById('rounds').value);
+
+            if (selectedMoves.length === 0 || !frequency || !roundLength || !totalRounds) {
+                alert('Please select at least one move and fill in all fields.');
+                return;
+            }
+
+            if (!audioContext) {
+                initAudio();
+            }
+
+            document.getElementById('setup').style.display = 'none';
+            document.getElementById('controls').style.display = 'block';
+
+            currentRound = 1;
+            isTrainingActive = true;
+            startGetReady();
+        }
+
+        function startGetReady() {
+            let beepsLeft = 3;
+            updateTimer(`Get Ready - ${beepsLeft}`);
+            
+            const beepInterval = setInterval(() => {
+                beepsLeft--;
+                if (beepsLeft > 0) {
+                    updateTimer(`Get Ready - ${beepsLeft}`);
+                    playBeep();
                 } else {
-                    endTraining();
+                    clearInterval(beepInterval);
+                    playBeep(true); // longer beep for start
+                    startRound();
                 }
-            }
-        }, 1000);
+            }, 1000);
+        }
 
-        moveTimer = setInterval(callOutMove, frequency * 1000);
-    }
+        function startRound() {
+            timeLeft = roundLength;
+            updateTimer();
+            callOutMove();
 
-    function startRest() {
-        speak("Rest");
-        let restTime = 10; // 10 seconds rest
-        updateTimer(`Rest - ${restTime}s`);
-        
-        const restInterval = setInterval(() => {
-            restTime--;
+            timer = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    clearInterval(moveTimer);
+                    if (currentRound < totalRounds) {
+                        startRest();
+                    } else {
+                        endTraining();
+                    }
+                }
+            }, 1000);
+
+            moveTimer = setInterval(callOutMove, frequency * 1000);
+        }
+
+        function startRest() {
+            speak("Rest");
+            let restTime = 10; // 10 seconds rest
             updateTimer(`Rest - ${restTime}s`);
             
-            if (restTime <= 0) {
-                clearInterval(restInterval);
-                if (currentRound < totalRounds) {
-                    currentRound++;
-                    startGetReady();
-                } else {
-                    endTraining();
+            const restInterval = setInterval(() => {
+                restTime--;
+                updateTimer(`Rest - ${restTime}s`);
+                
+                if (restTime <= 0) {
+                    clearInterval(restInterval);
+                    if (currentRound < totalRounds) {
+                        currentRound++;
+                        startGetReady();
+                    } else {
+                        endTraining();
+                    }
                 }
+            }, 1000);
+        }
+
+        function updateTimer(text) {
+            if (text) {
+                document.getElementById('timer').textContent = text;
+            } else {
+                document.getElementById('timer').textContent = `Round ${currentRound}/${totalRounds} - ${timeLeft}s`;
             }
-        }, 1000);
-    }
-
-    function updateTimer(text) {
-        if (text) {
-            document.getElementById('timer').textContent = text;
-        } else {
-            document.getElementById('timer').textContent = `Round ${currentRound}/${totalRounds} - ${timeLeft}s`;
         }
-    }
 
-    function playBeep(isLong = false) {
-        const duration = isLong ? 0.3 : 0.1;
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
+        function playBeep(isLong = false) {
+            const duration = isLong ? 0.3 : 0.1;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
 
-        oscillator.frequency.value = 800;
-        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.01);
-        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+            oscillator.frequency.value = 800;
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 0.01);
+            gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
 
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration);
-    }
-
-    function callOutMove() {
-        if (selectedMoves.length > 0 && isTrainingActive) {
-            const randomMove = selectedMoves[Math.floor(Math.random() * selectedMoves.length)];
-            document.getElementById('move').textContent = randomMove;
-            speak(randomMove);
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + duration);
         }
-    }
 
-    function speak(text) {
-        speech = new SpeechSynthesisUtterance(text);
-        speech.volume = parseFloat(document.getElementById('volume').value);
-        window.speechSynthesis.speak(speech);
-    }
+        function callOutMove() {
+            if (selectedMoves.length > 0 && isTrainingActive) {
+                const randomMove = selectedMoves[Math.floor(Math.random() * selectedMoves.length)];
+                document.getElementById('move').textContent = randomMove;
+                speak(randomMove);
+            }
+        }
 
-    function stopTraining() {
-        isTrainingActive = false;
-        clearInterval(timer);
-        clearInterval(moveTimer);
-        window.speechSynthesis.cancel();
-        if (audioContext) {
-            audioContext.close().then(() => {
-                audioContext = null;
+        function speak(text) {
+            if (isSpeaking) {
+                speechSynth.cancel();
+            }
+            isSpeaking = true;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.volume = parseFloat(document.getElementById('volume').value);
+            utterance.onend = () => {
+                isSpeaking = false;
+            };
+            utterance.onerror = (event) => {
+                console.error('SpeechSynthesisUtterance error', event);
+                isSpeaking = false;
+            };
+            speechSynth.speak(utterance);
+            console.log(`Speaking: "${text}"`);
+        }
+
+        function stopTraining() {
+            isTrainingActive = false;
+            clearInterval(timer);
+            clearInterval(moveTimer);
+            speechSynth.cancel();
+            if (audioContext) {
+                audioContext.close().then(() => {
+                    audioContext = null;
+                });
+            }
+            document.getElementById('move').textContent = '';
+            endTraining(false);
+        }
+
+        function endTraining(speakComplete = true) {
+            isTrainingActive = false;
+            clearInterval(timer);
+            clearInterval(moveTimer);
+            document.getElementById('setup').style.display = 'block';
+            document.getElementById('controls').style.display = 'none';
+            document.getElementById('move').textContent = '';
+            document.getElementById('timer').textContent = '';
+            currentRound = 1;
+            selectedMoves = [];
+            document.querySelectorAll('.move-item').forEach(item => {
+                item.classList.remove('selected');
             });
+            if (speakComplete) {
+                speak("Training complete");
+            }
         }
-        document.getElementById('move').textContent = '';
-        endTraining(false);
-    }
 
-    function endTraining(speakComplete = true) {
-        isTrainingActive = false;
-        clearInterval(timer);
-        clearInterval(moveTimer);
-        document.getElementById('setup').style.display = 'block';
-        document.getElementById('controls').style.display = 'none';
-        document.getElementById('move').textContent = '';
-        document.getElementById('timer').textContent = '';
-        currentRound = 1;
-        selectedMoves = [];
-        document.querySelectorAll('.move-item').forEach(item => {
-            item.classList.remove('selected');
-        });
-        if (speakComplete) {
-            speak("Training complete");
+        function testSpeech() {
+            speak("Testing speech synthesis. If you can hear this, speech is working correctly.");
         }
-    }
-</script>
+    </script>
 </body>
 </html>
