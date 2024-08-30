@@ -151,64 +151,61 @@
     let totalRounds;
     let speech = new SpeechSynthesisUtterance();
     let audioContext;
-
-    // Initialize audio context on user interaction
+    let isTrainingActive = false;
 
     function initAudio() {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        // Test audio
-        playBeep();
-    }
-function toggleMove() {
-    this.classList.toggle('selected');
-    const move = this.getAttribute('data-move');
-    if (this.classList.contains('selected')) {
-        selectedMoves.push(move);
-    } else {
-        selectedMoves = selectedMoves.filter(m => m !== move);
-    }
-}
-
-document.querySelectorAll('.move-item').forEach(item => {
-    item.addEventListener('click', toggleMove);
-});
-
-
-
-function addCustomMove() {
-    const customMove = document.getElementById('customMove').value.trim();
-    if (customMove) {
-        const moveGrid = document.getElementById('moveSelection');
-        const newMoveItem = document.createElement('div');
-        newMoveItem.className = 'move-item';
-        newMoveItem.setAttribute('data-move', customMove);
-        newMoveItem.textContent = customMove;
-        newMoveItem.addEventListener('click', toggleMove);
-        moveGrid.appendChild(newMoveItem);
-        document.getElementById('customMove').value = '';
-    }
-}
-   function startTraining() {
-    frequency = parseInt(document.getElementById('frequency').value);
-    roundLength = parseInt(document.getElementById('roundLength').value);
-    totalRounds = parseInt(document.getElementById('rounds').value);
-
-    if (selectedMoves.length === 0 || !frequency || !roundLength || !totalRounds) {
-        alert('Please select at least one move and fill in all fields.');
-        return;
     }
 
-    // Initialize audio context here
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    function toggleMove() {
+        this.classList.toggle('selected');
+        const move = this.getAttribute('data-move');
+        if (this.classList.contains('selected')) {
+            selectedMoves.push(move);
+        } else {
+            selectedMoves = selectedMoves.filter(m => m !== move);
+        }
     }
 
-    document.getElementById('setup').style.display = 'none';
-    document.getElementById('controls').style.display = 'block';
+    document.querySelectorAll('.move-item').forEach(item => {
+        item.addEventListener('click', toggleMove);
+    });
 
-    currentRound = 1;
-    startGetReady();
-}
+    function addCustomMove() {
+        const customMove = document.getElementById('customMove').value.trim();
+        if (customMove) {
+            const moveGrid = document.getElementById('moveSelection');
+            const newMoveItem = document.createElement('div');
+            newMoveItem.className = 'move-item';
+            newMoveItem.setAttribute('data-move', customMove);
+            newMoveItem.textContent = customMove;
+            newMoveItem.addEventListener('click', toggleMove);
+            moveGrid.appendChild(newMoveItem);
+            document.getElementById('customMove').value = '';
+        }
+    }
+
+    function startTraining() {
+        frequency = parseInt(document.getElementById('frequency').value);
+        roundLength = parseInt(document.getElementById('roundLength').value);
+        totalRounds = parseInt(document.getElementById('rounds').value);
+
+        if (selectedMoves.length === 0 || !frequency || !roundLength || !totalRounds) {
+            alert('Please select at least one move and fill in all fields.');
+            return;
+        }
+
+        if (!audioContext) {
+            initAudio();
+        }
+
+        document.getElementById('setup').style.display = 'none';
+        document.getElementById('controls').style.display = 'block';
+
+        currentRound = 1;
+        isTrainingActive = true;
+        startGetReady();
+    }
 
     function startGetReady() {
         let beepsLeft = 3;
@@ -227,27 +224,28 @@ function addCustomMove() {
         }, 1000);
     }
 
-   function startRound() {
-    timeLeft = roundLength;
-    updateTimer();
-    callOutMove();
-
-    timer = setInterval(() => {
-        timeLeft--;
+    function startRound() {
+        timeLeft = roundLength;
         updateTimer();
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            clearInterval(moveTimer);
-            if (currentRound < totalRounds) {
-                startRest();
-            } else {
-                endTraining();
-            }
-        }
-    }, 1000);
+        callOutMove();
 
-    moveTimer = setInterval(callOutMove, frequency * 1000);
-}
+        timer = setInterval(() => {
+            timeLeft--;
+            updateTimer();
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                clearInterval(moveTimer);
+                if (currentRound < totalRounds) {
+                    startRest();
+                } else {
+                    endTraining();
+                }
+            }
+        }, 1000);
+
+        moveTimer = setInterval(callOutMove, frequency * 1000);
+    }
+
     function startRest() {
         speak("Rest");
         let restTime = 10; // 10 seconds rest
@@ -270,7 +268,11 @@ function addCustomMove() {
     }
 
     function updateTimer(text) {
-        document.getElementById('timer').textContent = text;
+        if (text) {
+            document.getElementById('timer').textContent = text;
+        } else {
+            document.getElementById('timer').textContent = `Round ${currentRound}/${totalRounds} - ${timeLeft}s`;
+        }
     }
 
     function playBeep(isLong = false) {
@@ -289,26 +291,13 @@ function addCustomMove() {
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + duration);
     }
-function callOutMove() {
-    if (selectedMoves.length > 0) {
-        const randomMove = selectedMoves[Math.floor(Math.random() * selectedMoves.length)];
-        document.getElementById('move').textContent = randomMove;
-        speak(randomMove);
-    }
-}
-    function playTick() {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
 
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = 1000;
-        gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
+    function callOutMove() {
+        if (selectedMoves.length > 0 && isTrainingActive) {
+            const randomMove = selectedMoves[Math.floor(Math.random() * selectedMoves.length)];
+            document.getElementById('move').textContent = randomMove;
+            speak(randomMove);
+        }
     }
 
     function speak(text) {
@@ -318,6 +307,7 @@ function callOutMove() {
     }
 
     function stopTraining() {
+        isTrainingActive = false;
         clearInterval(timer);
         clearInterval(moveTimer);
         window.speechSynthesis.cancel();
@@ -327,9 +317,11 @@ function callOutMove() {
             });
         }
         document.getElementById('move').textContent = '';
-        endTraining();
+        endTraining(false);
     }
-    function endTraining() {
+
+    function endTraining(speakComplete = true) {
+        isTrainingActive = false;
         clearInterval(timer);
         clearInterval(moveTimer);
         document.getElementById('setup').style.display = 'block';
@@ -341,9 +333,10 @@ function callOutMove() {
         document.querySelectorAll('.move-item').forEach(item => {
             item.classList.remove('selected');
         });
-        speak("Training complete");
+        if (speakComplete) {
+            speak("Training complete");
+        }
     }
-    
 </script>
 </body>
 </html>
